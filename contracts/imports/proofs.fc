@@ -1,7 +1,7 @@
 #include "stdlib.fc";
 #include "errors.fc";
 
-{-(slice, slice, int) ReadHashmap(slice src, int m) inline {
+(slice, slice, int) ReadHashmap(slice src, int m) inline {
     if (src~load_uint(1)) {
         if (src~load_uint(1)) {
             ;; hml_same$11
@@ -44,7 +44,7 @@
 
     return LookUpHashmapAug(is_right ? right : left, n, key);
 }
--}
+
 int check_that_block_exists(int block_root_hash) inline {
     tuple prev_mc_blocks = get_prev_mc_blocks();
     int len = prev_mc_blocks.tlen();
@@ -86,8 +86,6 @@ int check_merkle_update_valid_return_new_hash(slice cs, int exotic?) inline_ref 
     cs~skip_bits(256); ;; old_hash
     return cs~load_uint(256);
 }
-
-
 
 int check_block_header_proof(cell proof_cell, int block_root_hash, int return_state_hash) inline_ref {
     var (ps, exotic?) = proof_cell.begin_parse_exotic();
@@ -165,9 +163,11 @@ slice find_shard_in_bintree(cell c) inline {
 
 slice check_proof(slice body) inline_ref {
     int block_root_hash = body~load_uint(256);
+    throw_if(err::empty_block_root_hash, body.slice_refs_empty?());
     cell block_proof = body~load_ref();
     cell state_proof = body~load_ref();
     int account_id = body~load_uint(256);
+    throw_if(err::emply_account_id), body.slice_refs_empty?());
     slice account_state = body~load_ref().begin_parse();
     cell shard_proof = body~load_dict();
     ifnot (shard_proof.null?()) {

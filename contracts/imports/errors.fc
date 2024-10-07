@@ -8,3 +8,5 @@ const int err::acc_hash_dismatch = 1004;
 const int err::shard_not_found = 1005;
 const int err::shard_not_found_in_bintree = 1006;
 const int err:invalid_shard_proof = 1007;
+const int err::empty_block_root_hash = 98;
+const int err::empty_account_id = 99;

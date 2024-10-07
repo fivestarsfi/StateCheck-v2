@@ -3,7 +3,9 @@ import { ProofChecker } from '../wrappers/Main';
 import { compile, NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider) {
-    const proofChecker = provider.open(ProofChecker.createFromConfig({}, await compile('Main')));
+    const proofChecker = provider.open(ProofChecker.createFromConfig({
+    
+  }, await compile('Main')));
 
     await proofChecker.sendDeploy(provider.sender(), toNano('0.05'));
 
