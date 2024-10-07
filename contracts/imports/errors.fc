@@ -1,0 +1,10 @@
+const int err::invalid_merkle_proof = 1101;
+const int err::invalid_merkle_update = 1102;
+const int err::pruned_branch_expected = 1103;
+const int err::block_not_found = 1000;
+const int err::invalid_block_header_proof = 1002;
+const int err::acc_not_found = 1003;
+const int err::acc_hash_dismatch = 1004;
+const int err::shard_not_found = 1005;
+const int err::shard_not_found_in_bintree = 1006;
+const int err:invalid_shard_proof = 1007;

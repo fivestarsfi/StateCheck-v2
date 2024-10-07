@@ -1,0 +1,143 @@
+#include "stdlib.fc";
+#include "errors.fc";
+
+int check_that_block_exists(int block_root_hash) inline {
+    tuple prev_mc_blocks = get_prev_mc_blocks();
+    int len = prev_mc_blocks.tlen();
+    int i = 0;
+    while (i < len) {
+        tuple x = prev_mc_blocks.at(i);
+        if (x.at(3) == block_root_hash) { ;; [ wc:Integer shard:Integer seqno:Integer root_hash:Integer file_hash:Integer ] = BlockId;
+            return true;
+        }
+        i = i + 1;
+    }
+    return false;
+}
+
+
+int check_merkle_proof_valid(slice cs, int exotic?, int hash) inline_ref {
+    ;;; ####### MERKLE PROOF VALIDATION #######
+    ifnot (exotic?) {
+        return 0;
+    }
+    ifnot (cs~load_uint(8) == 3) {
+        return 0;
+    }
+    ifnot (cs~load_uint(256) == hash) {
+        return 0;
+    }
+    return true;
+}
+
+
+int check_merkle_update_valid_return_new_hash(slice cs, int exotic?) inline_ref {
+    ;;; ####### MERKLE UPDATE VALIDATION #######
+    ifnot (exotic?) {
+        return 0;
+    }
+    ifnot (cs~load_uint(8) == 4) {
+        return 0;
+    }
+    cs~skip_bits(256); ;; old_hash
+    return cs~load_uint(256);
+}
+
+
+
+int check_block_header_proof(cell proof_cell, int block_root_hash, int return_state_hash) inline_ref {
+    var (ps, exotic?) = proof_cell.begin_parse_exotic();
+    throw_unless(err::invalid_merkle_proof, check_merkle_proof_valid(ps, exotic?, block_root_hash));
+    if (return_state_hash) {
+        slice psl = ps~load_ref().begin_parse();
+        psl~load_ref();
+        psl~load_ref();
+        cell state_update = psl~load_ref();
+        var (state_update_cs, exotic?) = state_update.begin_parse_exotic();
+        int state_hash = check_merkle_update_valid_return_new_hash(state_update_cs, exotic?);
+        throw_unless(err::invalid_merkle_update, state_hash);
+        return state_hash;
+    }
+    return false;
+}
+
+
+slice find_shard_in_bintree(cell c) inline {
+    var (ps, exotic?) = c.begin_parse_exotic();
+    if (exotic?) {
+        throw_unless(err::pruned_branch_expected, ps~load_uint(8) == 1);
+        return null();
+    }
+    if (ps~load_int(1)) { ;;bt_fork$1 {X:Type} left:^(BinTree X) right:^(BinTree X) = BinTree X;
+        slice left = find_shard_in_bintree(ps~load_ref());
+        slice right = find_shard_in_bintree(ps~load_ref());
+        if (left.null?()) {
+            return right;
+        }
+        else {
+            return left;
+        }
+    }
+    else { ;;bt_leaf$0 {X:Type} leaf:X = BinTree X;
+        return ps;
+    }
+}
+
+
+() check_shard_proof(cell mc_block_proof, cell mc_state_proof, int mc_block_hash, int shard_wc, int shard_block_hash) impure inline {
+    int state_hash = check_block_header_proof(mc_block_proof, mc_block_hash, true);
+    var (ps, exotic?) = mc_state_proof.begin_parse_exotic();
+    throw_unless(err::invalid_merkle_proof, check_merkle_proof_valid(ps, exotic?, state_hash));
+    slice psl = ps~load_ref().begin_parse();
+    psl~load_ref(); ;; out_msg_queue_info
+    psl~load_ref(); ;; accounts
+    psl~load_ref(); ;; state
+    slice custom = psl~load_ref().begin_parse();
+    cell shards_hashes_dict = custom~load_dict();
+    (slice shard_descr_bin_tree, var found?) = shards_hashes_dict.udict_get?(32, shard_wc);
+    throw_unless(err::shard_not_found, found?);
+    slice shard_descr = find_shard_in_bintree(begin_cell().store_slice(shard_descr_bin_tree).end_cell());
+    throw_unless(err::shard_not_found_in_bintree, shard_descr.null?());
+    shard_descr~skip_bits(32 + 32 + 64 + 64);
+    int shrd_blk_hash = shard_descr~load_uint(256);
+    throw_unless(err::invalid_block_header_proof, shrd_blk_hash == shard_block_hash);
+}
+
+
+() check_account_state_proof(int block_root_hash, cell block_proof, cell state_proof, int account_id, slice account_state) impure inline {
+    ;; already proved shard block here (masterchain if account is in masterchain)
+    int state_hash = check_block_header_proof(block_proof, block_root_hash, true);
+    var (ps, exotic?) = state_proof.begin_parse_exotic();
+    throw_unless(err::invalid_merkle_proof, check_merkle_proof_valid(ps, exotic?, state_hash));
+    slice psl = ps~load_ref().begin_parse();
+    psl~load_ref(); ;; out_msg_queue_info
+    slice shard_accounts = psl~load_ref().begin_parse();
+    cell accounts_dict = shard_accounts~load_dict();
+    throw_if(err::acc_not_found, null?(accounts_dict));
+    (slice shard_account, var found?) = accounts_dict.udict_get?(256, account_id);
+    throw_unless(err::acc_not_found, found?);
+    throw_unless(err::acc_hash_dismatch, shard_account.slice_hash() == account_state.slice_hash());
+}
+
+slice check_proof(slice body) inline_ref {
+    int block_root_hash = body~load_uint(256);
+    cell block_proof = body~load_ref();
+    cell state_proof = body~load_ref();
+    int account_id = body~load_uint(256);
+    slice account_state = body~load_ref().begin_parse();
+    cell shard_proof = body~load_dict();
+    ifnot (shard_proof.null?()) {
+        slice shard_proof = shard_proof.begin_parse();
+        cell mc_block_proof = shard_proof~load_ref();
+        cell mc_state_proof = shard_proof~load_ref();
+        int mc_block_hash = shard_proof~load_uint(256);
+        int shard_wc = shard_proof~load_uint(32);
+        throw_unless(check_that_block_exists(mc_block_hash), err::block_not_found);
+        check_shard_proof(mc_block_proof, mc_state_proof, mc_block_hash, shard_wc, block_root_hash);
+    } else {
+        throw_unless(check_that_block_exists(block_root_hash), err::block_not_found);
+    }
+    check_account_state_proof(block_root_hash, block_proof, state_proof, account_id, account_state);
+    return account_state;
+}
+
