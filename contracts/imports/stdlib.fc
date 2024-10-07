@@ -23,6 +23,10 @@
 int tlen (tuple t) asm "TLEN";
 tuple get_prev_mc_blocks() impure asm "PREVMCBLOCKS";
 (slice, int) begin_parse_exotic(cell c) asm "XCTOS";
+(slice, (int)) ~load_ones(slice src) asm (-> 1 0) "LDONES";
+int slice_has_prefix(slice s, slice pfx) asm "SDPFXREV";
+int get_bit_size(int x) asm "UBITSIZE";
+int cell_hash_x(cell c, int i) asm "CHASHIX";
 
 ;;; Adds an element to the beginning of lisp-style list.
 forall X -> tuple cons(X head, tuple tail) asm "CONS";

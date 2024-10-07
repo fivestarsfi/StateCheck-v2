@@ -1,6 +1,50 @@
 #include "stdlib.fc";
 #include "errors.fc";
 
+{-(slice, slice, int) ReadHashmap(slice src, int m) inline {
+    if (src~load_uint(1)) {
+        if (src~load_uint(1)) {
+            ;; hml_same$11
+            slice v = src~load_bits(1);
+            int n = get_bit_size(m);
+            return (src, v, n);
+        } else {
+            ;; hml_long$10
+            int n = get_bit_size(m);
+            slice s = src~load_bits(n);
+            return (src, s, n);
+        }
+    } else {
+        ;; hml_short$0
+        int n = src~load_ones();
+        src~load_uint(1); 
+        throw_unless(1010, n <= m);
+        slice s = src~load_bits(n);
+        return (src, s, n);
+    }
+}
+
+(slice) LookUpHashmapAug(cell root, int n, slice key) inline_ref {
+    (slice remaining, slice label, int l) = ReadHashmap(root.begin_parse(), n);
+
+    n -= l;
+
+    if (n == 0) {
+        return remaining;
+    }
+
+    ifnot (slice_has_prefix(key, label)) {
+        return remaining;
+    }
+
+    key~skip_bits(l);
+    int is_right = key~load_uint(1);
+    cell left = remaining~load_ref();
+    cell right = remaining~load_ref();
+
+    return LookUpHashmapAug(is_right ? right : left, n, key);
+}
+-}
 int check_that_block_exists(int block_root_hash) inline {
     tuple prev_mc_blocks = get_prev_mc_blocks();
     int len = prev_mc_blocks.tlen();
