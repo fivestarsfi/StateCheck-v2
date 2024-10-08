@@ -159,7 +159,7 @@ slice find_shard_in_bintree(cell c) inline {
     throw_unless(err::acc_not_found, found?);
 
     ;; extra (DepthBalanceInfo)
-    slice extra = account_data~load_bits(64 + 256); ;; Предполагаем, что DepthBalanceInfo состоит из 64-битного depth и 256-битного balance
+    slice extra = account_data~load_bits(64 + 256); ;; DepthBalanceInfo
     
     ;; ShardAccount
     cell shard_account = account_data~load_ref();
