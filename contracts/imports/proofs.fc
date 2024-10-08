@@ -161,13 +161,13 @@ slice find_shard_in_bintree(cell c) inline {
     throw_unless(err::acc_hash_dismatch, shard_account.slice_hash() == account_state.slice_hash());
 }
 
-slice check_proof(slice body) inline_ref {
+slice check_proof(slice body) impure {
     int block_root_hash = body~load_uint(256);
     throw_if(err::empty_block_root_hash, body.slice_refs_empty?());
     cell block_proof = body~load_ref();
     cell state_proof = body~load_ref();
     int account_id = body~load_uint(256);
-    throw_if(err::emply_account_id), body.slice_refs_empty?());
+    throw_if(err::empty_account_id, body.slice_refs_empty?());
     slice account_state = body~load_ref().begin_parse();
     cell shard_proof = body~load_dict();
     ifnot (shard_proof.null?()) {
