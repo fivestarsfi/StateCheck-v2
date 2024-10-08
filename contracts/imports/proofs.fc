@@ -24,25 +24,34 @@
     }
 }
 
-(slice) LookUpHashmapAug(cell root, int n, slice key) inline_ref {
-    (slice remaining, slice label, int l) = ReadHashmap(root.begin_parse(), n);
-
-    n -= l;
-
-    if (n == 0) {
-        return remaining;
+(slice, slice, int) FullHashmapAugNode(cell dict, int key_len, slice key) inline {
+    slice cs = dict.begin_parse();
+    
+    while (key_len > 0) {
+        (cs, slice label, int l) = ReadHashmap(cs, key_len);
+        
+        key_len -= l;
+        
+        if (key_len == 0) {
+            ;; list with extra and value
+            slice extra = cs~load_ref().begin_parse();
+            slice value = cs;
+            return (extra, value, -1);
+        }
+        
+        ifnot (slice_has_prefix(key, label)) {
+            return (null(), null(), 0);
+        }
+        
+        key~skip_bits(l);
+        int is_right = key~load_uint(1);
+        cell left = cs~load_ref();
+        cell right = cs~load_ref();
+        
+        cs = (is_right ? right : left).begin_parse();
     }
-
-    ifnot (slice_has_prefix(key, label)) {
-        return remaining;
-    }
-
-    key~skip_bits(l);
-    int is_right = key~load_uint(1);
-    cell left = remaining~load_ref();
-    cell right = remaining~load_ref();
-
-    return LookUpHashmapAug(is_right ? right : left, n, key);
+    
+    return (null(), null(), 0);
 }
 
 int check_that_block_exists(int block_root_hash) inline {
@@ -155,15 +164,12 @@ slice find_shard_in_bintree(cell c) inline {
     slice shard_accounts = psl~load_ref().begin_parse();
     cell accounts_dict = shard_accounts~load_dict();
     throw_if(err::acc_not_found, accounts_dict.null?());
-    (slice account_data, var found?) = accounts_dict.udict_get?(256, account_id);
+    slice key = begin_cell().store_uint(account_id, 256).end_cell().begin_parse();
+    (slice extra, slice value, int found?) = FullHashmapAugNode(accounts_dict, 256, key);
     throw_unless(err::acc_not_found, found?);
-
-    ;; extra (DepthBalanceInfo)
-    slice extra = account_data~load_bits(64 + 256); ;; DepthBalanceInfo
-    
-    ;; ShardAccount
-    cell shard_account = account_data~load_ref();
-    throw_unless(err::acc_hash_dismatch, shard_account.cell_hash() == account_state.slice_hash());
+    throw_unless(err::acc_hash_dismatch, value.slice_hash() == account_state.slice_hash());
+    int depth = extra~load_uint(64); ;; download from extra (optional)
+    int balance = extra~load_uint(256); ;; download from extra (optional)
 }
 
 slice check_proof(slice body) inline_ref {
