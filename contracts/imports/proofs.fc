@@ -139,12 +139,11 @@ slice find_shard_in_bintree(cell c) inline {
     (slice shard_descr_bin_tree, var found?) = shards_hashes_dict.udict_get?(32, shard_wc);
     throw_unless(err::shard_not_found, found?);
     slice shard_descr = find_shard_in_bintree(begin_cell().store_slice(shard_descr_bin_tree).end_cell());
-    throw_unless(err::shard_not_found_in_bintree, shard_descr.null?());
+    throw_unless(err::shard_not_found_in_bintree, ~ shard_descr.null?());
     shard_descr~skip_bits(32 + 32 + 64 + 64);
     int shrd_blk_hash = shard_descr~load_uint(256);
     throw_unless(err::invalid_block_header_proof, shrd_blk_hash == shard_block_hash);
 }
-
 
 () check_account_state_proof(int block_root_hash, cell block_proof, cell state_proof, int account_id, slice account_state) impure inline {
     ;; already proved shard block here (masterchain if account is in masterchain)
@@ -155,19 +154,23 @@ slice find_shard_in_bintree(cell c) inline {
     psl~load_ref(); ;; out_msg_queue_info
     slice shard_accounts = psl~load_ref().begin_parse();
     cell accounts_dict = shard_accounts~load_dict();
-    throw_if(err::acc_not_found, null?(accounts_dict));
-    (slice shard_account, var found?) = accounts_dict.udict_get?(256, account_id);
+    throw_if(err::acc_not_found, accounts_dict.null?());
+    (slice account_data, var found?) = accounts_dict.udict_get?(256, account_id);
     throw_unless(err::acc_not_found, found?);
-    throw_unless(err::acc_hash_dismatch, shard_account.slice_hash() == account_state.slice_hash());
+
+    ;; extra (DepthBalanceInfo)
+    slice extra = account_data~load_bits(64 + 256); ;; Предполагаем, что DepthBalanceInfo состоит из 64-битного depth и 256-битного balance
+    
+    ;; ShardAccount
+    cell shard_account = account_data~load_ref();
+    throw_unless(err::acc_hash_dismatch, shard_account.cell_hash() == account_state.slice_hash());
 }
 
-slice check_proof(slice body) impure {
+slice check_proof(slice body) inline_ref {
     int block_root_hash = body~load_uint(256);
-    throw_if(err::empty_block_root_hash, body.slice_refs_empty?());
     cell block_proof = body~load_ref();
     cell state_proof = body~load_ref();
     int account_id = body~load_uint(256);
-    throw_if(err::empty_account_id, body.slice_refs_empty?());
     slice account_state = body~load_ref().begin_parse();
     cell shard_proof = body~load_dict();
     ifnot (shard_proof.null?()) {
@@ -184,4 +187,3 @@ slice check_proof(slice body) impure {
     check_account_state_proof(block_root_hash, block_proof, state_proof, account_id, account_state);
     return account_state;
 }
-
