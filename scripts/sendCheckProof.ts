@@ -3,7 +3,7 @@ import { ProofChecker } from '../wrappers/Main';
 import { compile, NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider) {
-    const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('EQALpqqAPvCoO4EKp3OxxFmwrCbn2E2hjB1JLqD7klqtwU4c'))); // replace with actual address
+    const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('EQBTVE5sBB-LpYMjHI6atT2cEvYmiAiEezV5ixI7UpcuuajM'))); // replace with actual address
 
     // Prepare the proof data
     const blockRootHash = BigInt('0x11111'); // replace with actual block root hash
@@ -34,6 +34,6 @@ export async function run(provider: NetworkProvider) {
 
     await new Promise(resolve => setTimeout(resolve, 5000));
 
-    const accountState = await proofChecker.getAccountState();
-    console.log('Account is active:', accountState.active);
+    // const accountState = await proofChecker.getAccountState();
+    // console.log('Account is active:', accountState.active);
 }

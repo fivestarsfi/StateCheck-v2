@@ -33,9 +33,10 @@
         key_len -= l;
         
         if (key_len == 0) {
-            ;; list with extra and value
-            slice extra = cs~load_ref().begin_parse();
-            slice value = cs;
+            ;; extra in the current cell, dictionary in the reference
+            slice extra = cs;
+            cell dict_ref = cs~load_ref();
+            slice value = dict_ref.begin_parse();
             return (extra, value, -1);
         }
         
@@ -172,7 +173,7 @@ slice find_shard_in_bintree(cell c) inline {
     int balance = extra~load_uint(256); ;; download from extra (optional)
 }
 
-slice check_proof(slice body) inline_ref {
+slice check_proof(slice body) impure {
     int block_root_hash = body~load_uint(256);
     cell block_proof = body~load_ref();
     cell state_proof = body~load_ref();
