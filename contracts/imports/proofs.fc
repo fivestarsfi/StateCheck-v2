@@ -1,7 +1,7 @@
 #include "stdlib.fc";
 #include "errors.fc";
 
-(slice, slice, int) ReadHashmap(slice src, int m) inline {
+(slice, slice, int) ReadHashmap(slice src, int m) impure inline {
     if (src~load_uint(1)) {
         if (src~load_uint(1)) {
             ;; hml_same$11
@@ -24,7 +24,7 @@
     }
 }
 
-(slice, slice, int) FullHashmapAugNode(cell dict, int key_len, slice key) inline {
+(slice, slice, int) FullHashmapAugNode(cell dict, int key_len, slice key) impure inline {
     slice cs = dict.begin_parse();
     
     while (key_len > 0) {
@@ -55,7 +55,7 @@
     return (null(), null(), 0);
 }
 
-int check_that_block_exists(int block_root_hash) inline {
+int check_that_block_exists(int block_root_hash) impure inline {
     tuple prev_mc_blocks = get_prev_mc_blocks();
     int len = prev_mc_blocks.tlen();
     int i = 0;
@@ -70,7 +70,7 @@ int check_that_block_exists(int block_root_hash) inline {
 }
 
 
-int check_merkle_proof_valid(slice cs, int exotic?, int hash) inline_ref {
+int check_merkle_proof_valid(slice cs, int exotic?, int hash) impure inline_ref {
     ;;; ####### MERKLE PROOF VALIDATION #######
     ifnot (exotic?) {
         return 0;
@@ -85,7 +85,7 @@ int check_merkle_proof_valid(slice cs, int exotic?, int hash) inline_ref {
 }
 
 
-int check_merkle_update_valid_return_new_hash(slice cs, int exotic?) inline_ref {
+int check_merkle_update_valid_return_new_hash(slice cs, int exotic?) impure inline_ref {
     ;;; ####### MERKLE UPDATE VALIDATION #######
     ifnot (exotic?) {
         return 0;
@@ -97,7 +97,7 @@ int check_merkle_update_valid_return_new_hash(slice cs, int exotic?) inline_ref 
     return cs~load_uint(256);
 }
 
-int check_block_header_proof(cell proof_cell, int block_root_hash, int return_state_hash) inline_ref {
+int check_block_header_proof(cell proof_cell, int block_root_hash, int return_state_hash) impure inline_ref {
     var (ps, exotic?) = proof_cell.begin_parse_exotic();
     throw_unless(err::invalid_merkle_proof, check_merkle_proof_valid(ps, exotic?, block_root_hash));
     if (return_state_hash) {
@@ -114,7 +114,7 @@ int check_block_header_proof(cell proof_cell, int block_root_hash, int return_st
 }
 
 
-slice find_shard_in_bintree(cell c) inline {
+slice find_shard_in_bintree(cell c) impure inline {
     var (ps, exotic?) = c.begin_parse_exotic();
     if (exotic?) {
         throw_unless(err::pruned_branch_expected, ps~load_uint(8) == 1);
@@ -136,7 +136,7 @@ slice find_shard_in_bintree(cell c) inline {
 }
 
 
-() check_shard_proof(cell mc_block_proof, cell mc_state_proof, int mc_block_hash, int shard_wc, int shard_block_hash) impure inline {
+() check_shard_proof(cell mc_block_proof, cell mc_state_proof, int mc_block_hash, int shard_wc, int shard_block_hash) inline {
     int state_hash = check_block_header_proof(mc_block_proof, mc_block_hash, true);
     var (ps, exotic?) = mc_state_proof.begin_parse_exotic();
     throw_unless(err::invalid_merkle_proof, check_merkle_proof_valid(ps, exotic?, state_hash));
@@ -145,8 +145,8 @@ slice find_shard_in_bintree(cell c) inline {
     psl~load_ref(); ;; accounts
     psl~load_ref(); ;; state
     slice custom = psl~load_ref().begin_parse();
-    cell shards_hashes_dict = custom~load_dict();
-    (slice shard_descr_bin_tree, var found?) = shards_hashes_dict.udict_get?(32, shard_wc);
+    cell shards_hashes_dict = custom~load_ref();
+    (slice shard_descr_bin_tree, var found?) = shards_hashes_dict.idict_get?(32, shard_wc);
     throw_unless(err::shard_not_found, found?);
     slice shard_descr = find_shard_in_bintree(begin_cell().store_slice(shard_descr_bin_tree).end_cell());
     throw_unless(err::shard_not_found_in_bintree, ~ shard_descr.null?());
@@ -155,7 +155,7 @@ slice find_shard_in_bintree(cell c) inline {
     throw_unless(err::invalid_block_header_proof, shrd_blk_hash == shard_block_hash);
 }
 
-() check_account_state_proof(int block_root_hash, cell block_proof, cell state_proof, int account_id, slice account_state) impure inline {
+() check_account_state_proof(int block_root_hash, cell block_proof, cell state_proof, int account_id, slice account_state) inline {
     ;; already proved shard block here (masterchain if account is in masterchain)
     int state_hash = check_block_header_proof(block_proof, block_root_hash, true);
     var (ps, exotic?) = state_proof.begin_parse_exotic();

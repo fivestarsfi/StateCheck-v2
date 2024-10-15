@@ -3,7 +3,7 @@ import { ProofChecker } from '../wrappers/Main';
 import { compile, NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider) {
-    const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('EQBTVE5sBB-LpYMjHI6atT2cEvYmiAiEezV5ixI7UpcuuajM'))); // replace with actual address
+    const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('0QCPrJ6fUuso80sbv7WKN6uFhl8AUKZ3fpT7-74SEkGeLvBQ'))); // replace with actual address
 
     // Prepare the proof data
     const blockRootHash = BigInt('0x11111'); // replace with actual block root hash
