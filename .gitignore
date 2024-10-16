@@ -3,7 +3,7 @@ build
 temp
 dist
 .DS_Store
-pycache
+__pycache__/
 # VS Code
 .vscode/*
 .history/
