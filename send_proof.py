@@ -21,9 +21,9 @@ async def get_wallet(client):
 
 
 async def main():
-    client = MyLiteClient.from_mainnet_config(5, 2)
+    client = MyLiteClient.from_testnet_config(5, 2) # change to from_mainnet_config if you want check proof in mainnet
     await client.connect()
-    addr = Address('Uf_BvG8IeNYQFsOQ8Z5WqhcFLAcjZP_rvx-5_y32IyIYkJWz')
+    addr = Address('0QAZWpJf_wKa71UQJ49e2exbTbvHaz67f4Ip8NIyXquH-Kdc')
     block_proof, state_proof, account_state, block = await client.get_account_proof(addr)
     print(account_state)
 
