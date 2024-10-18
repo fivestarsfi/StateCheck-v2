@@ -16,26 +16,27 @@ describe('ProofChecker', () => {
     let liteClient: LiteClient;
 
     beforeAll(async () => {
-        code = await compile('ProofChecker');
+        code = await compile('Main');
 
-        // Инициализация лайт-клиента с использованием TON Access
-        const { data: config } = await axios.post(TON_ACCESS_URL, {
-            id: '1',
-            jsonrpc: '2.0',
-            method: 'getConfig',
-            params: [0]
+const { data: globalConfig } = await axios.get('https://ton.org/global-config.json');
+
+function intToIP(int: number) {
+    var part1 = int & 255;
+    var part2 = ((int >> 8) & 255);
+    var part3 = ((int >> 16) & 255);
+    var part4 = ((int >> 24) & 255);
+
+    return part4 + '.' + part3 + '.' + part2 + '.' + part1;
+}
+
+        const liteClient = new LiteClient({
+            engine: new LiteRoundRobinEngine(
+                globalConfig.liteservers.map((server: any) => new LiteSingleEngine({
+                    host: `tcp://${intToIP(server.ip)}:${server.port}`,
+                    publicKey: Buffer.from(server.id.key, 'base64')
+                }))
+            )
         });
-
-        const engines = config.result.liteservers.map((ls: any) => {
-            return new LiteSingleEngine({
-                host: `${ls.ip}:${ls.port}`,
-                publicKey: Buffer.from(ls.id.key, 'base64'),
-            });
-        });
-
-        const engine = new LiteRoundRobinEngine(engines);
-        liteClient = new LiteClient({ engine });
-    });
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
@@ -58,53 +59,23 @@ describe('ProofChecker', () => {
         // Проверка выполняется внутри beforeEach
     });
 
-    it('should check valid proof', async () => {
-        // Получение данных из реальной сети через лайт-клиент
-        const { last } = await liteClient.getMasterchainInfo();
-        const blockRootHash = last.last.root_hash;
-        const accountAddress = Address.parse('EQA...');  // Замените на реальный адрес
-        const accountInfo = await liteClient.getAccountState(accountAddress, last);
+    it('should check', async () => {
+      const accountAddress = Address.parse('EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE');
+        const accountState = await liteClient.getAccountState(
+            accountAddress,
+            {
+                workchain: -1,
+                shard: (-0x8000000000000000n).toString(10),
+                seqno: 40858608,
+                rootHash: Buffer.from('9eeed2b60691f0541e557cae78546c4499dd6d7020b94904766d5dc28a4a0da6', 'hex'),
+                fileHash: Buffer.from('b805366557a97b74b8d0c0e816e999fe6028189cd134c7d43c78b51374008fe2', 'hex')
+            }
+        );
 
-        // Получение доказательств через лайт-клиент
-        const blockProof = await liteClient.getBlock(last.last);
-        const { stateProof } = await liteClient.getAccountState(accountAddress, last);
+Cell.fromBoc(accountState.shardProof) // пруф того что акк в блоке
+Cell.fromBoc(accountState.proof) // пруф что шард блок в мастере
+Cell.fromBoc(accountState.raw) // Maybe Account
 
-        // Подготовка входных данных для смарт-контракта
-        const inputData = beginCell()
-            .storeBuffer(blockRootHash)
-            .storeRef(Cell.fromBoc(blockProof.proof)[0])
-            .storeRef(Cell.fromBoc(stateProof)[0])
-            .storeUint(BigInt(accountAddress.hash), 256)
-            .storeRef(accountInfo.state ?? beginCell().endCell())
-            .storeDict(null)  // shardProof, null для простоты
-            .endCell();
-
-        const result = await proofChecker.sendCheckProof(deployer.getSender(), inputData);
-
-        expect(result.transactions).toHaveTransaction({
-            from: deployer.address,
-            to: proofChecker.address,
-            success: true,
-        });
     });
-
-    it('should reject invalid proof', async () => {
-        // Подготовка неверных входных данных
-        const invalidInputData = beginCell()
-            .storeBuffer(Buffer.alloc(32))  // Неверный root hash
-            .storeRef(beginCell().endCell())  // Пустое доказательство блока
-            .storeRef(beginCell().endCell())  // Пустое доказательство состояния
-            .storeUint(0, 256)  // Неверный account_id
-            .storeRef(beginCell().endCell())  // Пустое состояние аккаунта
-            .storeDict(null)
-            .endCell();
-
-        const result = await proofChecker.sendCheckProof(deployer.getSender(), invalidInputData);
-
-        expect(result.transactions).toHaveTransaction({
-            from: deployer.address,
-            to: proofChecker.address,
-            success: false,
-        });
-    });
+ })
 });

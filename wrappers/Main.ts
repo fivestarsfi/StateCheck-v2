@@ -10,7 +10,6 @@ import {
     SendMode,
     Dictionary
 } from '@ton/core';
-import { ClientAccountState } from 'ton-lite-client';
 
 export type ProofCheckerConfig = {
 };
@@ -48,22 +47,38 @@ export class ProofChecker implements Contract {
         via: Sender,
         value: bigint,
         opts: {
-            rootHash: Buffer;
-            blockProofer: Buffer;
-            stateProofer: Account | null;
-            accRawer: Buffer;
-            accountState: ClientAccountState;
-            shardProofer: Buffer;
-        }
+            rootHash: bigint;
+            blockProofer: Cell;
+            stateProofer: Cell;
+            accID: bigint;
+            accountState: Cell;
+            shardProofer?: {
+                mcBlockProof: Cell;
+                mcStateProof: Cell;
+                mcBlockHash: bigint;
+                shardWc: number;
+        };
+       }
     ) {
-
+        let shardProofDict: Dictionary<number, Cell> | null = null;
+        
+        if (opts.shardProofer) {
+            const shardProofCell = beginCell()
+                .storeRef(opts.shardProofer.mcBlockProof)
+                .storeRef(opts.shardProofer.mcStateProof)
+                .storeUint(opts.shardProofer.mcBlockHash, 256)
+                .storeUint(opts.shardProofer.shardWc, 32)
+                .endCell();
+            shardProofDict = Dictionary.empty(Dictionary.Keys.Uint(32), Dictionary.Values.Cell());
+            shardProofDict.set(0, shardProofCell);
+        }
         const body = beginCell()
-            .storeBuffer(opts.rootHash, 256)
-            .storeBuffer(opts.blockProofer)
-            .storeDictDirect(opts.stateProofer)
-            .storeBuffer(opts.accRawer)
-            .store(opts.accountState)
-            .storeBuffer(opts.shardProofer)
+            .storeUint(opts.rootHash, 256)
+            .storeRef(opts.blockProofer)
+            .storeRef(opts.stateProofer)
+            .storeUint(opts.accID, 256)
+            .storeRef(opts.accountState)
+            .storeDict(shardProofDict)
             .endCell();
 
         await provider.internal(via, {

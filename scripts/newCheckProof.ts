@@ -5,7 +5,7 @@ import { compile, NetworkProvider } from '@ton/blueprint';
 import axios from 'axios';
 import { Account } from 'ton-core';
 // mainnet version
-export async function AccChecker(provider: NetworkProvider) {
+export async function run(provider: NetworkProvider) {
 const { data: globalConfig } = await axios.get('https://ton.org/global-config.json');
 
 function intToIP(int: number) {
@@ -37,21 +37,30 @@ const accountAddress = Address.parse('EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t
                 fileHash: Buffer.from('b805366557a97b74b8d0c0e816e999fe6028189cd134c7d43c78b51374008fe2', 'hex')
             }
         );
-const stateProofer = accountState.state
-console.log(stateProofer)
-const shardProofer = accountState.shardProof // пруф того что акк в блоке
-const blockProofer = accountState.proof // пруф что шард блок в мастере
-const accRawer = accountState.raw // Maybe Account
 
-const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('EQCiu_FPv51ZQI3ZlYMHIxVuFSa3uWvDuk_o4oLzPBj_N3RG'))); // replace with actual address
+const stateProofer = accountState.state
+const shardProofer = Cell.fromBoc(accountState.shardProof) // пруф того что акк в блоке
+const blockProofer = Cell.fromBoc(accountState.proof) // пруф что шард блок в мастере
+const accRawer = Cell.fromBoc(accountState.raw) // Maybe Account
+const accID = Buffer.from('0:65aac9b5e380eae928db3c8e238d9bc0d61a9320fdc2bc7a2f6c87d6fedf9208', 'hex')
+console.log(blockProofer)
+const shardProof = {
+        mcBlockProof: blockProofer, // Replace with actual MC block proof
+        mcStateProof: stateProofer, // Replace with actual MC state proof
+        mcBlockHash: Buffer.from('9eeed2b60691f0541e557cae78546c4499dd6d7020b94904766d5dc28a4a0da6', 'hex'), // Replace with actual MC block hash
+        shardWc: 0, // Replace with actual shard workchain
+    };
+
+const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('EQCiu_FPv51ZQI3ZlYMHIxVuFSa3uWvDuk_o4oLzPBj_N3RG')));
+
 await proofChecker.sendCheckProof(provider.sender(), toNano('0.05'), {
-        rootHash: Buffer.from('9eeed2b60691f0541e557cae78546c4499dd6d7020b94904766d5dc28a4a0da6', 'hex'),
+        /* rootHash,
         blockProofer,
         stateProofer,
-        accRawer,
-        accountState,
-        shardProofer, 
+        accID,
+        accountState, 
+        shardProofer: shardProof, */ 
     });
 
-console.log('Account state:', accountState)
+console.log('Account state:', accountState) 
 }
