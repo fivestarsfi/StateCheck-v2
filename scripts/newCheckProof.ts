@@ -3,10 +3,8 @@ import { toNano, Address, beginCell, Cell } from '@ton/core';
 import { ProofChecker } from '../wrappers/Main';
 import { compile, NetworkProvider } from '@ton/blueprint';
 import axios from 'axios';
-
-export async function run(provider: NetworkProvider) {
-    const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('0QCPrJ6fUuso80sbv7WKN6uFhl8AUKZ3fpT7-74SEkGeLvBQ'))); // replace with actual address
- 
+// mainnet version
+export async function AccChecker(provider: NetworkProvider) {
 const { data: globalConfig } = await axios.get('https://ton.org/global-config.json');
 
 function intToIP(int: number) {
@@ -39,7 +37,17 @@ const accountAddress = Address.parse('EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t
             }
         );
 
-Cell.fromBoc(accountState.shardProof) // пруф того что акк в блоке
-Cell.fromBoc(accountState.proof) // пруф что шард блок в мастере
-Cell.fromBoc(accountState.raw) // Maybe Account
+const shardProofer = Cell.fromBoc(accountState.shardProof) // пруф того что акк в блоке
+const blockProofer = Cell.fromBoc(accountState.proof) // пруф что шард блок в мастере
+const accRawer = Cell.fromBoc(accountState.raw) // Maybe Account
+
+const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('EQCiu_FPv51ZQI3ZlYMHIxVuFSa3uWvDuk_o4oLzPBj_N3RG'))); // replace with actual address
+await proofChecker.sendCheckProof(provider.sender(), toNano('0.05'), {
+        accRawer,
+        blockProofer,
+        // accountState
+        shardProofer, 
+    });
+
+console.log('Account state:', accountState)
 }

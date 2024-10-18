@@ -1,6 +1,7 @@
 import { toNano, Address, beginCell } from '@ton/core';
 import { ProofChecker } from '../wrappers/Main';
 import { compile, NetworkProvider } from '@ton/blueprint';
+import { AccChecker } from '../scripts/newCheckProof';
 
 export async function run(provider: NetworkProvider) {
     const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('0QCPrJ6fUuso80sbv7WKN6uFhl8AUKZ3fpT7-74SEkGeLvBQ'))); // replace with actual address

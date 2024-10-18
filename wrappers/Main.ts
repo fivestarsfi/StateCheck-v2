@@ -44,47 +44,23 @@ export class ProofChecker implements Contract {
     async sendCheckProof(
         provider: ContractProvider,
         via: Sender,
+        value: bigint,
         opts: {
-            value: bigint;
-            blockRootHash: bigint;
-            blockProof: Cell;
-            stateProof: Cell;
-            accountId: bigint;
-            accountState: Cell;
-            shardProof?: {
-                mcBlockProof: Cell;
-                mcStateProof: Cell;
-                mcBlockHash: bigint;
-                shardWc: number;
-            };
-        }
+            accRawer: Cell;
+            blockProofer: Cell;
+            shardProofer: Cell;
+            
+            }
     ) {
-        
-        let shardProofDict: Dictionary<number, Cell> | null = null;
-        
-        if (opts.shardProof) {
-            const shardProofCell = beginCell()
-                .storeRef(opts.shardProof.mcBlockProof)
-                .storeRef(opts.shardProof.mcStateProof)
-                .storeUint(opts.shardProof.mcBlockHash, 256)
-                .storeUint(opts.shardProof.shardWc, 32)
-                .endCell();
-
-            shardProofDict = Dictionary.empty(Dictionary.Keys.Uint(32), Dictionary.Values.Cell());
-            shardProofDict.set(0, shardProofCell);
-        }
 
         const body = beginCell()
-            .storeUint(opts.blockRootHash, 256)
-            .storeRef(opts.blockProof)
-            .storeRef(opts.stateProof)
-            .storeUint(opts.accountId, 256)
-            .storeRef(opts.accountState)
-            .storeDict(shardProofDict)
+            .storeRef(opts.accRawer)
+            .storeRef(opts.blockProofer)
+            .storeRef(opts.shardProofer)
             .endCell();
 
         await provider.internal(via, {
-            value: opts.value,
+            value: value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: body,
         });

@@ -21,9 +21,9 @@ async def get_wallet(client):
 
 
 async def main():
-    client = MyLiteClient.from_testnet_config(5, 2) # change to from_mainnet_config if you want check proof in mainnet
+    client = MyLiteClient.from_mainnet_config(5, 2) # change to from_mainnet_config if you want check proof in mainnet
     await client.connect()
-    addr = Address('0QAZWpJf_wKa71UQJ49e2exbTbvHaz67f4Ip8NIyXquH-Kdc')
+    addr = Address('EQABP_mH-2U_B0dmQyKHtRA0BT49jIFo26sP05m17MZ9p0Nk')
     block_proof, state_proof, account_state, block = await client.get_account_proof(addr)
     print(account_state)
 
@@ -40,9 +40,9 @@ async def main():
     si = StateInit(code=code, data=Cell.empty())
     contract = await Contract.from_state_init(client, 0, si)
     print(contract)
-    # await contract.send_external(body=proof)
+    await contract.send_external(body=proof)
     wallet = await get_wallet(client)
-    # print(proof)
+    print(proof)
     await wallet.transfer(contract.address, 3 * 10 ** 7, body=proof)
 
     await client.close()
