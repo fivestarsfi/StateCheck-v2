@@ -680,10 +680,10 @@
   resolved "https://registry.npmjs.org/@tact-lang/opcode/-/opcode-0.0.16.tgz"
   integrity sha512-YJTUjoDOy+e+FHHppJiF+uWJ2IMjVknB9VQ5n78pknCE129DazCb/nFXnw0wVRDVcn8Tn59ky+pmjiQjQOjEbw==
 
-"@ton-community/func-js-bin@0.4.4-newops.1":
-  version "0.4.4-newops.1"
-  resolved "https://registry.npmjs.org/@ton-community/func-js-bin/-/func-js-bin-0.4.4-newops.1.tgz"
-  integrity sha512-TV4t6XhmItq4t+wv4pV30yEwb+YvdmsKo4Ig4B0zp4PLdI0r9iZHz4y5bBHcXmDQDRqulXzK6kTgfHvs2CIsaQ==
+"@ton-community/func-js-bin@0.4.5-tvmbeta.3":
+  version "0.4.5-tvmbeta.3"
+  resolved "https://registry.npmjs.org/@ton-community/func-js-bin/-/func-js-bin-0.4.5-tvmbeta.3.tgz"
+  integrity sha512-bPeXO1dhjvJuMtiP20eePF1UI536ygot9FIBj8lPwWKBLEphBkz0uPp1vhNg2vvPZACGw6vzw840rAGpCtnFRg==
 
 "@ton-community/func-js@^0.7.0":
   version "0.7.0"

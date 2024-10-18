@@ -1,0 +1,366 @@
+// automatically generated from `./contracts/main.fc` incl:`./contracts/imports/stdlib.fc` incl:`./contracts/imports/proofs.fc` incl:`./contracts/imports/errors.fc` 
+PROGRAM{
+  DECLPROC ReadHashmap
+  DECLPROC FullHashmapAugNode
+  DECLPROC check_that_block_exists
+  DECLPROC check_merkle_proof_valid
+  DECLPROC check_merkle_update_valid_return_new_hash
+  DECLPROC check_block_header_proof
+  DECLPROC find_shard_in_bintree
+  DECLPROC check_shard_proof
+  DECLPROC check_account_state_proof
+  DECLPROC check_proof
+  DECLPROC recv_internal
+  DECLPROC recv_external
+  ReadHashmap PROCINLINE:<{
+    SWAP
+    1 LDU
+    SWAP
+    IF:<{
+      1 LDU
+      SWAP
+      IFJMP:<{
+        1 LDSLICE
+        s0 s2 XCHG
+        UBITSIZE
+      }>
+      SWAP
+      UBITSIZE
+      TUCK
+      LDSLICEX
+      s0 s2 XCHG
+    }>ELSE<{
+      LDONES
+      1 LDU
+      NIP
+      s1 s2 PUXC
+      LEQ
+      1010 THROWIFNOT
+      TUCK
+      LDSLICEX
+      s0 s2 XCHG
+    }>
+  }>
+  FullHashmapAugNode PROCINLINE:<{
+    CONT:<{
+      c2 SAVE
+      SAMEALTSAVE
+      s0 s2 XCHG
+      CTOS
+      WHILE:<{
+        OVER
+        0 GTINT
+      }>DO<{
+        OVER
+        ReadHashmap INLINECALLDICT
+        s3 s3 XCPU
+        SUB
+        DUP
+        0 EQINT
+        IFJMP:<{
+          s2 s4 XCHG
+          4 BLKDROP
+          DUP
+          LDREF
+          DROP
+          CTOS
+          -1 PUSHINT
+          RETALT
+        }>
+        s4 s1 PUXC
+        SDPFXREV
+        IFNOTJMP:<{
+          4 BLKDROP
+          PUSHNULL
+          PUSHNULL
+          0 PUSHINT
+          RETALT
+        }>
+        2SWAP
+        SDSKIPFIRST
+        1 LDU
+        s0 s3 XCHG
+        LDREF
+        LDREF
+        DROP
+        s0 s2 XCHG
+        IF:<{
+          DROP
+        }>ELSE<{
+          NIP
+        }>
+        CTOS
+      }>
+      3 BLKDROP
+      PUSHNULL
+      PUSHNULL
+      0 PUSHINT
+    }>
+    EXECUTE
+  }>
+  check_that_block_exists PROCINLINE:<{
+    CONT:<{
+      c2 SAVE
+      SAMEALTSAVE
+      PREVMCBLOCKS
+      DUP
+      TLEN
+      0 PUSHINT
+      WHILE:<{
+        s0 s1 PUSH2
+        LESS
+      }>DO<{
+        s2 s0 PUSH2
+        INDEXVAR
+        3 INDEX
+        s4 PUSH
+        EQUAL
+        IFJMP:<{
+          4 BLKDROP
+          TRUE
+          RETALT
+        }>
+        INC
+      }>
+      4 BLKDROP
+      FALSE
+    }>
+    EXECUTE
+  }>
+  check_merkle_proof_valid PROCREF:<{
+    SWAP
+    IFNOTJMP:<{
+      2DROP
+      0 PUSHINT
+    }>
+    SWAP
+    8 LDU
+    SWAP
+    3 EQINT
+    IFNOTJMP:<{
+      2DROP
+      0 PUSHINT
+    }>
+    256 LDU
+    DROP
+    SWAP
+    EQUAL
+    IFNOTJMP:<{
+      0 PUSHINT
+    }>
+    TRUE
+  }>
+  check_merkle_update_valid_return_new_hash PROCREF:<{
+    IFNOTJMP:<{
+      DROP
+      0 PUSHINT
+    }>
+    8 LDU
+    SWAP
+    4 EQINT
+    IFNOTJMP:<{
+      DROP
+      0 PUSHINT
+    }>
+    8 PUSHPOW2
+    SDSKIPFIRST
+    256 LDU
+    DROP
+  }>
+  check_block_header_proof PROCREF:<{
+    s0 s2 XCHG
+    XCTOS
+    s1 s0 s2 PUXC2
+    check_merkle_proof_valid INLINECALLDICT
+    1101 THROWIFNOT
+    SWAP
+    IFJMP:<{
+      LDREF
+      DROP
+      CTOS
+      LDREF
+      NIP
+      LDREF
+      NIP
+      LDREF
+      DROP
+      XCTOS
+      check_merkle_update_valid_return_new_hash INLINECALLDICT
+      DUP
+      1102 THROWIFNOT
+    }>
+    DROP
+    FALSE
+  }>
+  find_shard_in_bintree PROCINLINE:<{
+    XCTOS
+    IF:<{
+      8 LDU
+      DROP
+      1 EQINT
+      1103 THROWIFNOT
+      PUSHNULL
+    }>ELSE<{
+      1 LDI
+      SWAP
+      IFJMP:<{
+        LDREF
+        SWAP
+        find_shard_in_bintree INLINECALLDICT
+        SWAP
+        LDREF
+        DROP
+        find_shard_in_bintree INLINECALLDICT
+        OVER
+        ISNULL
+        IFJMP:<{
+          NIP
+        }>
+        DROP
+      }>
+    }>
+  }>
+  check_shard_proof PROCINLINE:<{
+    s4 s2 XCHG2
+    TRUE
+    check_block_header_proof INLINECALLDICT
+    s0 s2 XCHG
+    XCTOS
+    s1 s0 s3 PUXC2
+    check_merkle_proof_valid INLINECALLDICT
+    1101 THROWIFNOT
+    SWAP
+    LDREF
+    DROP
+    CTOS
+    LDREF
+    NIP
+    LDREF
+    NIP
+    LDREF
+    NIP
+    LDREF
+    DROP
+    CTOS
+    LDREF
+    DROP
+    s1 s2 XCHG
+    32 PUSHINT
+    DICTIGET
+    NULLSWAPIFNOT
+    1005 THROWIFNOT
+    NEWC
+    SWAP
+    STSLICER
+    ENDC
+    find_shard_in_bintree INLINECALLDICT
+    DUP
+    ISNULL
+    NOT
+    1006 THROWIFNOT
+    192 PUSHINT
+    SDSKIPFIRST
+    256 LDU
+    DROP
+    SWAP
+    EQUAL
+    1002 THROWIFNOT
+  }>
+  check_account_state_proof PROCINLINE:<{
+    s3 s4 XCHG2
+    TRUE
+    check_block_header_proof INLINECALLDICT
+    SWAP
+    XCTOS
+    s1 s0 s2 PUXC2
+    check_merkle_proof_valid INLINECALLDICT
+    1101 THROWIFNOT
+    LDREF
+    DROP
+    CTOS
+    LDREF
+    NIP
+    LDREF
+    DROP
+    CTOS
+    LDDICT
+    DROP
+    DUP
+    ISNULL
+    1003 THROWIF
+    SWAP
+    NEWC
+    256 STU
+    ENDC
+    CTOS
+    8 PUSHPOW2
+    SWAP
+    FullHashmapAugNode INLINECALLDICT
+    1 2 BLKDROP2
+    1003 THROWIFNOT
+    HASHSU
+    SWAP
+    HASHSU
+    EQUAL
+    1004 THROWIFNOT
+  }>
+  check_proof PROC:<{
+    256 LDU
+    LDREF
+    NIP
+    LDREF
+    NIP
+    256 LDU
+    NIP
+    LDREF
+    SWAP
+    CTOS
+    SWAP
+    LDDICT
+    DROP
+    DUP
+    ISNULL
+    IF:<{
+      DROP
+      OVER
+      check_that_block_exists INLINECALLDICT
+      DROP
+      NIP
+    }>ELSE<{
+      1 2 BLKDROP2
+      CTOS
+      LDREF
+      NIP
+      LDREF
+      NIP
+      256 LDU
+      DROP
+      DUP
+      check_that_block_exists INLINECALLDICT
+      2DROP
+    }>
+  }>
+  recv_internal PROC:<{
+    3 1 BLKDROP2
+    DUP
+    SEMPTY
+    IFJMP:<{
+      DROP
+    }>
+    check_proof CALLDICT
+    1 LDI
+    2DROP
+  }>
+  recv_external PROC:<{
+    3 1 BLKDROP2
+    DUP
+    SEMPTY
+    IFJMP:<{
+      DROP
+    }>
+    check_proof CALLDICT
+    ACCEPT
+    1 LDI
+    2DROP
+  }>
+}END>c

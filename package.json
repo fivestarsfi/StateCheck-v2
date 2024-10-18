@@ -27,5 +27,8 @@
         "@ton-community/sandbox": "^0.11.0",
         "axios": "^1.7.7",
         "ton-lite-client": "^3.0.0"
+    },
+    "overrides": {
+        "@ton-community/func-js-bin": "0.4.5-tvmbeta.3"
     }
 }

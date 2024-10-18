@@ -5,8 +5,8 @@ import { compile, NetworkProvider } from '@ton/blueprint';
 import axios from 'axios';
 
 export async function run(provider: NetworkProvider) {
-const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('0QCPrJ6fUuso80sbv7WKN6uFhl8AUKZ3fpT7-74SEkGeLvBQ'))); // replace with actual address
-
+    const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('0QCPrJ6fUuso80sbv7WKN6uFhl8AUKZ3fpT7-74SEkGeLvBQ'))); // replace with actual address
+ 
 const { data: globalConfig } = await axios.get('https://ton.org/global-config.json');
 
 function intToIP(int: number) {
@@ -27,7 +27,7 @@ function intToIP(int: number) {
             )
         });
 
-        const accountAddress = Address.parse('kQBFot7L_lSA1ZpRMDqu9zmvgLFbEGWuNvAvxion9APsm93D');
+const accountAddress = Address.parse('EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE');
         const accountState = await liteClient.getAccountState(
             accountAddress,
             {
@@ -39,13 +39,7 @@ function intToIP(int: number) {
             }
         );
 
-        await proofChecker.sendCheckProof(provider.sender(), {
-    });
-
-
-
 Cell.fromBoc(accountState.shardProof) // пруф того что акк в блоке
 Cell.fromBoc(accountState.proof) // пруф что шард блок в мастере
 Cell.fromBoc(accountState.raw) // Maybe Account
-console.log('Account is active:', liteClient.getAccountState);
 }
