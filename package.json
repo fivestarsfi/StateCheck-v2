@@ -19,7 +19,8 @@
         "prettier": "^3.3.3",
         "ts-jest": "^29.2.5",
         "ts-node": "^10.9.2",
-        "typescript": "^5.6.2"
+        "typescript": "^5.6.2",
+        "ton-compiler": "^2.3.0"
     },
     "dependencies": {
         "@orbs-network/ton-access": "^2.3.3",
