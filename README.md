@@ -3,7 +3,7 @@
 # respect to og repo by yungwine https://github.com/yungwine/state-check-example 
 
 ## Compile to fift
-- `npx func-js ./contracts/imports/stdlib.fc ./contracts/imports/proofs.fc --fift ./contracts/imports/proofs.fif`
+- `npx func-js ./contracts/main.fc --fift ./contracts/imports/proofs.fif`
 
 ## Project structure
 
