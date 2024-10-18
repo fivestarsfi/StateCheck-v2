@@ -1,5 +1,6 @@
 import {
     Address,
+    Account,
     beginCell,
     Cell,
     Contract,
@@ -9,6 +10,7 @@ import {
     SendMode,
     Dictionary
 } from '@ton/core';
+import { ClientAccountState } from 'ton-lite-client';
 
 export type ProofCheckerConfig = {
 };
@@ -46,17 +48,22 @@ export class ProofChecker implements Contract {
         via: Sender,
         value: bigint,
         opts: {
-            accRawer: Cell;
-            blockProofer: Cell;
-            shardProofer: Cell;
-            
-            }
+            rootHash: Buffer;
+            blockProofer: Buffer;
+            stateProofer: Account | null;
+            accRawer: Buffer;
+            accountState: ClientAccountState;
+            shardProofer: Buffer;
+        }
     ) {
 
         const body = beginCell()
-            .storeRef(opts.accRawer)
-            .storeRef(opts.blockProofer)
-            .storeRef(opts.shardProofer)
+            .storeBuffer(opts.rootHash, 256)
+            .storeBuffer(opts.blockProofer)
+            .storeDictDirect(opts.stateProofer)
+            .storeBuffer(opts.accRawer)
+            .store(opts.accountState)
+            .storeBuffer(opts.shardProofer)
             .endCell();
 
         await provider.internal(via, {

@@ -21,8 +21,7 @@ export async function run(provider: NetworkProvider) {
         shardWc: 0, // Replace with actual shard workchain
     };
 
-    await proofChecker.sendCheckProof(provider.sender(), {
-        value: toNano('0.1'),
+    await proofChecker.sendCheckProof(provider.sender(), toNano('0.05'), {
         blockRootHash,
         blockProof,
         stateProof,

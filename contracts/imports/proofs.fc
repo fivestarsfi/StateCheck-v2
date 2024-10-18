@@ -191,6 +191,6 @@ slice check_proof(slice body) impure {
     } else {
         throw_unless(check_that_block_exists(block_root_hash), err::block_not_found);
     }
-    check_account_state_proof(block_root_hash, block_proof, state_proof, account_id, account_state);
+    check_account_state_proof(block_root_hash, block_proof, state_proof, account_id, account_state);   
     return account_state;
 }

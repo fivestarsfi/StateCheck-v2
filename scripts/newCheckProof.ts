@@ -3,6 +3,7 @@ import { toNano, Address, beginCell, Cell } from '@ton/core';
 import { ProofChecker } from '../wrappers/Main';
 import { compile, NetworkProvider } from '@ton/blueprint';
 import axios from 'axios';
+import { Account } from 'ton-core';
 // mainnet version
 export async function AccChecker(provider: NetworkProvider) {
 const { data: globalConfig } = await axios.get('https://ton.org/global-config.json');
@@ -36,16 +37,19 @@ const accountAddress = Address.parse('EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t
                 fileHash: Buffer.from('b805366557a97b74b8d0c0e816e999fe6028189cd134c7d43c78b51374008fe2', 'hex')
             }
         );
-
-const shardProofer = Cell.fromBoc(accountState.shardProof) // пруф того что акк в блоке
-const blockProofer = Cell.fromBoc(accountState.proof) // пруф что шард блок в мастере
-const accRawer = Cell.fromBoc(accountState.raw) // Maybe Account
+const stateProofer = accountState.state
+console.log(stateProofer)
+const shardProofer = accountState.shardProof // пруф того что акк в блоке
+const blockProofer = accountState.proof // пруф что шард блок в мастере
+const accRawer = accountState.raw // Maybe Account
 
 const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('EQCiu_FPv51ZQI3ZlYMHIxVuFSa3uWvDuk_o4oLzPBj_N3RG'))); // replace with actual address
 await proofChecker.sendCheckProof(provider.sender(), toNano('0.05'), {
-        accRawer,
+        rootHash: Buffer.from('9eeed2b60691f0541e557cae78546c4499dd6d7020b94904766d5dc28a4a0da6', 'hex'),
         blockProofer,
-        // accountState
+        stateProofer,
+        accRawer,
+        accountState,
         shardProofer, 
     });
 

@@ -1,6 +1,7 @@
 # StateCheckExample-v2
 
 # respect to og repo by yungwine https://github.com/yungwine/state-check-example 
+# thx for help NickNekilov
 
 ## Compile to fift
 - `npx func-js ./contracts/main.fc --fift ./contracts/imports/proofs.fif`
