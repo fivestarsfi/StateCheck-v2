@@ -1,5 +1,5 @@
 node_modules
-/secret.py
+/build
 temp
 dist
 .DS_Store
