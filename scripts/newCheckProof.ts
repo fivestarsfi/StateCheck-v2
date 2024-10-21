@@ -3,10 +3,7 @@ import { toNano, Address, beginCell, Cell } from '@ton/core';
 import { ProofChecker } from '../wrappers/Main';
 import { compile, NetworkProvider } from '@ton/blueprint';
 import axios from 'axios';
-import { Account } from 'ton-core';
 // mainnet version
-export async function run(provider: NetworkProvider) {
-const { data: globalConfig } = await axios.get('https://ton.org/global-config.json');
 
 function intToIP(int: number) {
     var part1 = int & 255;
@@ -16,6 +13,9 @@ function intToIP(int: number) {
 
     return part4 + '.' + part3 + '.' + part2 + '.' + part1;
 }
+
+export async function run(provider: NetworkProvider) {
+const { data: globalConfig } = await axios.get('https://ton.org/global-config.json');
 
         const liteClient = new LiteClient({
             engine: new LiteRoundRobinEngine(
@@ -43,6 +43,7 @@ console.log(stateProofer)
 const rootHash = Buffer.from('9eeed2b60691f0541e557cae78546c4499dd6d7020b94904766d5dc28a4a0da6', 'hex')
 
 // const [shardProofer] = Cell.fromBoc(accountState.shardProof) // пруф того что акк в блоке
+
 const [blockProofer] = Cell.fromBoc(accountStater.proof) // пруф что шард блок в мастере
 
 const accRawer = Cell.fromBoc(accountStater.raw) // Maybe Account
@@ -66,7 +67,7 @@ const shardProofer = {
         
     };
 
-const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('EQCiu_FPv51ZQI3ZlYMHIxVuFSa3uWvDuk_o4oLzPBj_N3RG')));
+const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('EQD7YrjK6en_nISdSSn6jvPI896mZG5ZgUn-GdB1yudAxdLR')));
 
 await proofChecker.sendCheckProof(provider.sender(), toNano('0.1'), {
         rootHash,
