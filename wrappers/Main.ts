@@ -47,16 +47,17 @@ export class ProofChecker implements Contract {
         via: Sender,
         value: bigint,
         opts: {
-            rootHash: bigint;
+            rootHash: Buffer;
             blockProofer: Cell;
             stateProofer: Cell;
-            accID: bigint;
+            accID: Buffer;
             accountState: Cell;
             shardProofer?: {
                 mcBlockProof: Cell;
                 mcStateProof: Cell;
-                mcBlockHash: bigint;
+                mcBlockHash: Buffer;
                 shardWc: number;
+                blockRootHash: Buffer;
         };
        }
     ) {
@@ -66,17 +67,18 @@ export class ProofChecker implements Contract {
             const shardProofCell = beginCell()
                 .storeRef(opts.shardProofer.mcBlockProof)
                 .storeRef(opts.shardProofer.mcStateProof)
-                .storeUint(opts.shardProofer.mcBlockHash, 256)
+                .storeBuffer(opts.shardProofer.mcBlockHash)
                 .storeUint(opts.shardProofer.shardWc, 32)
+                .storeBuffer(opts.shardProofer.blockRootHash)
                 .endCell();
             shardProofDict = Dictionary.empty(Dictionary.Keys.Uint(32), Dictionary.Values.Cell());
             shardProofDict.set(0, shardProofCell);
         }
         const body = beginCell()
-            .storeUint(opts.rootHash, 256)
+            .storeBuffer(opts.rootHash)
             .storeRef(opts.blockProofer)
             .storeRef(opts.stateProofer)
-            .storeUint(opts.accID, 256)
+            .storeBuffer(opts.accID)
             .storeRef(opts.accountState)
             .storeDict(shardProofDict)
             .endCell();

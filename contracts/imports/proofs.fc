@@ -33,9 +33,9 @@
         key_len -= l;
         
         if (key_len == 0) {
-            ;; extra in the current cell, dictionary in the reference
-            slice extra = cs;
-            cell dict_ref = cs~load_ref();
+            ;; first extra in the cs, second extra in the _ref
+            slice extra = cs; ;; first extra
+            cell extraa = cs~load_ref(); ;; second extra
             slice value = dict_ref.begin_parse();
             return (extra, value, -1);
         }
