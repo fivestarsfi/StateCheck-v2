@@ -307,11 +307,8 @@ PROGRAM{
   check_proof PROC:<{
     256 LDU
     LDREF
-    NIP
     LDREF
-    NIP
     256 LDU
-    NIP
     LDREF
     SWAP
     CTOS
@@ -322,23 +319,25 @@ PROGRAM{
     ISNULL
     IF:<{
       DROP
+      s4 PUSH
+      check_that_block_exists INLINECALLDICT
+      DROP
+    }>ELSE<{
+      CTOS
+      LDREF
+      LDREF
+      256 LDU
+      32 LDU
+      DROP
       OVER
       check_that_block_exists INLINECALLDICT
       DROP
-      NIP
-    }>ELSE<{
-      1 2 BLKDROP2
-      CTOS
-      LDREF
-      NIP
-      LDREF
-      NIP
-      256 LDU
-      DROP
-      DUP
-      check_that_block_exists INLINECALLDICT
-      2DROP
+      s8 PUSH
+      check_shard_proof INLINECALLDICT
     }>
+    4 -ROLL
+    s4 PUSH
+    check_account_state_proof INLINECALLDICT
   }>
   recv_internal PROC:<{
     3 1 BLKDROP2

@@ -77,5 +77,5 @@ await proofChecker.sendCheckProof(provider.sender(), toNano('0.1'), {
         shardProofer, 
     });
 
-// console.log('Account state:', accountState) 
+console.log('Account state:', accountStater) 
 }

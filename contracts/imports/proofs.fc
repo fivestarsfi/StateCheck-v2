@@ -36,7 +36,7 @@
             ;; first extra in the cs, second extra in the _ref
             slice extra = cs; ;; first extra
             cell extraa = cs~load_ref(); ;; second extra
-            slice value = dict_ref.begin_parse();
+            slice value = extraa.begin_parse();
             return (extra, value, -1);
         }
         
@@ -136,7 +136,7 @@ slice find_shard_in_bintree(cell c) impure inline {
 }
 
 
-() check_shard_proof(cell mc_block_proof, cell mc_state_proof, int mc_block_hash, int shard_wc, int shard_block_hash) inline {
+() check_shard_proof(cell mc_block_proof, cell mc_state_proof, int mc_block_hash, int shard_wc, int shard_block_hash) impure inline {
     int state_hash = check_block_header_proof(mc_block_proof, mc_block_hash, true);
     var (ps, exotic?) = mc_state_proof.begin_parse_exotic();
     throw_unless(err::invalid_merkle_proof, check_merkle_proof_valid(ps, exotic?, state_hash));
@@ -155,7 +155,7 @@ slice find_shard_in_bintree(cell c) impure inline {
     throw_unless(err::invalid_block_header_proof, shrd_blk_hash == shard_block_hash);
 }
 
-() check_account_state_proof(int block_root_hash, cell block_proof, cell state_proof, int account_id, slice account_state) inline {
+() check_account_state_proof(int block_root_hash, cell block_proof, cell state_proof, int account_id, slice account_state) impure inline {
     ;; already proved shard block here (masterchain if account is in masterchain)
     int state_hash = check_block_header_proof(block_proof, block_root_hash, true);
     var (ps, exotic?) = state_proof.begin_parse_exotic();
