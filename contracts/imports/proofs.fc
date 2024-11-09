@@ -24,7 +24,7 @@
     }
 }
 
-(slice, slice, int) FullHashmapAugNode(cell dict, int key_len, slice key) impure inline {
+(slice, slice, int) FullHashmapAugNode(cell dict, int key_len, slice key) impure inline { 
     slice cs = dict.begin_parse();
     
     while (key_len > 0) {
@@ -37,9 +37,14 @@
             slice extra = cs; ;; first extra
             cell extraa = cs~load_ref(); ;; second extra
             slice value = extraa.begin_parse();
-            return (extra, value, -1);
+            (cell dict_value, int found) = dict.pfxdict_get?(key_len, key);
+            throw_unless(707, found == -1); 
+            if (found) {
+                slice dict_value_slice = dict_value.begin_parse();
+                throw_unless(708, equal_slices(dict_value_slice, value));
         }
-        
+        return (extra, value, -1);
+     } 
         ifnot (slice_has_prefix(key, label)) {
             return (null(), null(), 0);
         }
@@ -164,9 +169,11 @@ slice find_shard_in_bintree(cell c) impure inline {
     psl~load_ref(); ;; out_msg_queue_info
     slice shard_accounts = psl~load_ref().begin_parse();
     cell accounts_dict = shard_accounts~load_dict();
+    (slice state_descr_bin_tree, var found?) = accounts_dict.udict_get?(32, account_id);
     throw_if(err::acc_not_found, accounts_dict.null?());
     slice key = begin_cell().store_uint(account_id, 256).end_cell().begin_parse();
     (slice extra, slice value, int found?) = FullHashmapAugNode(accounts_dict, 256, key);
+    (slice state_descr_bin_tree, var found?) = accounts_dict.udict_get?(32, account_id);
     throw_unless(err::acc_not_found, found?);
     throw_unless(err::acc_hash_dismatch, value.slice_hash() == account_state.slice_hash());
     int depth = extra~load_uint(64); ;; download from extra (optional)
