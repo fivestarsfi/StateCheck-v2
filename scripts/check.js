@@ -1,7 +1,7 @@
 const TonWeb = require('tonweb');
+const { getHttpEndpoint } = require("@orbs-network/ton-access");
 
 async function proveBlockState(
-    provider,
     contractAddress,
     blockIdExt,
     shardBlockIdExt,
@@ -9,35 +9,38 @@ async function proveBlockState(
     proof,
     state
 ) {
-    const tonweb = new TonWeb(provider);
-
-    const cell = new TonWeb.boc.Cell();
-    
-    cell.bits.writeUint(blockIdExt.workchain, 32);
-    cell.bits.writeUint(blockIdExt.shard, 64);
-    cell.bits.writeUint(blockIdExt.seqno, 32);
-    cell.bits.writeUint(blockIdExt.root_hash, 256);
-    cell.bits.writeUint(blockIdExt.file_hash, 256);
-
-    cell.bits.writeUint(shardBlockIdExt.workchain, 32);
-    cell.bits.writeUint(shardBlockIdExt.shard, 64);
-    cell.bits.writeUint(shardBlockIdExt.seqno, 32);
-    cell.bits.writeUint(shardBlockIdExt.root_hash, 256);
-    cell.bits.writeUint(shardBlockIdExt.file_hash, 256);
-
-    cell.bits.writeBytes(shardProof);
-    cell.bits.writeBytes(proof);
-    cell.bits.writeBytes(state);
-
-    const payload = {
-        to: contractAddress,
-        value: TonWeb.utils.toNano('0.1'), 
-        body: cell.toBoc(),
-        sendMode: 3 
-    };
-
     try {
-       
+        const endpoint = await getHttpEndpoint({
+            network: "mainnet", // или "testnet"
+        });
+
+        const tonweb = new TonWeb(new TonWeb.HttpProvider(endpoint));
+
+        const cell = new TonWeb.boc.Cell();
+        
+        cell.bits.writeUint(blockIdExt.workchain, 32);
+        cell.bits.writeUint(blockIdExt.shard, 64);
+        cell.bits.writeUint(blockIdExt.seqno, 32);
+        cell.bits.writeUint(blockIdExt.root_hash, 256);
+        cell.bits.writeUint(blockIdExt.file_hash, 256);
+
+        cell.bits.writeUint(shardBlockIdExt.workchain, 32);
+        cell.bits.writeUint(shardBlockIdExt.shard, 64);
+        cell.bits.writeUint(shardBlockIdExt.seqno, 32);
+        cell.bits.writeUint(shardBlockIdExt.root_hash, 256);
+        cell.bits.writeUint(shardBlockIdExt.file_hash, 256);
+
+        cell.bits.writeBytes(shardProof);
+        cell.bits.writeBytes(proof);
+        cell.bits.writeBytes(state);
+
+        const payload = {
+            to: contractAddress,
+            value: TonWeb.utils.toNano('0.1'),
+            body: cell.toBoc(),
+            sendMode: 3
+        };
+
         const result = await tonweb.sendBoc(payload);
         
         const transaction = await tonweb.provider.getTransaction(result.hash);
@@ -45,13 +48,15 @@ async function proveBlockState(
         if (transaction.exitCode === 0) {
             return {
                 success: true,
-                message: "State proof verified successfully"
+                message: "State proof verified successfully",
+                transactionHash: result.hash
             };
         } else {
             return {
                 success: false,
                 message: "State proof verification failed",
-                exitCode: transaction.exitCode
+                exitCode: transaction.exitCode,
+                transactionHash: result.hash
             };
         }
     } catch (error) {
@@ -63,35 +68,53 @@ async function proveBlockState(
     }
 }
 
-const provider = new TonWeb.HttpProvider('https://toncenter.com/api/v2/jsonRPC', {apiKey: 'YOUR_MAINNET_TONCENTER_API_KEY'});
+async function main() {
+    try {
+        const endpoint = await getHttpEndpoint();
+        const tonweb = new TonWeb(new TonWeb.HttpProvider(endpoint));
+        
+        const masterchainInfo = await tonweb.provider.getMasterchainInfo();
+        
+        const blockInfo = await tonweb.provider.getBlockHeader(
+            masterchainInfo.last.workchain,
+            masterchainInfo.last.shard,
+            masterchainInfo.last.seqno
+        );
+        
+        const exampleData = {
+            contractAddress: 'EQD7YrjK6en_nISdSSn6jvPI896mZG5ZgUn-GdB1yudAxdLR',
+            blockIdExt: {
+                workchain: masterchainInfo.last.workchain,
+                shard: masterchainInfo.last.shard,
+                seqno: masterchainInfo.last.seqno,
+                root_hash: masterchainInfo.last.root_hash,
+                file_hash: masterchainInfo.last.file_hash
+            },
+            shardBlockIdExt: {
+                workchain: masterchainInfo.last.workchain,
+                shard: masterchainInfo.last.shard,
+                seqno: masterchainInfo.last.seqno,
+                root_hash: masterchainInfo.last.root_hash,
+                file_hash: masterchainInfo.last.file_hash
+            },
+            shardProof: masterchainInfo.last.shard_proof, 
+            proof: masterchainInfo.last.proof,     
+            state: masterchainInfo.last.state       
+        };
 
-const blockIdExt = {
-    workchain: 0,
-    shard: (BigInt("0x8000000000000000"), 64),
-    seqno: 40858608,
-    root_hash: Buffer.from('9eeed2b60691f0541e557cae78546c4499dd6d7020b94904766d5dc28a4a0da6', 'hex'),
-    file_hash: Buffer.from('b805366557a97b74b8d0c0e816e999fe6028189cd134c7d43c78b51374008fe2', 'hex')
-};
+        const result = await proveBlockState(
+            exampleData.contractAddress,
+            exampleData.blockIdExt,
+            exampleData.shardBlockIdExt,
+            exampleData.shardProof,
+            exampleData.proof,
+            exampleData.state
+        );
+        console.log('Result:', result);
+    } catch (error) {
 
-const shardBlockIdExt = {
-    workchain: 0,
-    shard:  (BigInt("0x8000000000000000"), 64),
-    seqno: 40858608,
-    root_hash: Buffer.from('9eeed2b60691f0541e557cae78546c4499dd6d7020b94904766d5dc28a4a0da6', 'hex'),
-    file_hash: Buffer.from('b805366557a97b74b8d0c0e816e999fe6028189cd134c7d43c78b51374008fe2', 'hex')
-};
+        console.error('Error:', error);
+    }
+}
 
-const contractAddress = 'EQD7YrjK6en_nISdSSn6jvPI896mZG5ZgUn-GdB1yudAxdLR'; 
-const shardProof = Buffer.from('te6ccgECFAEAAnkACUYDH7FlvFX4nw2k', 'hex');
-const proof = Buffer.from('s4cxUpMo0tn1FgwyH6Jws9PMDB04cYAFgEkEBHvVar', 'hex');
-const state = Buffer.from('...', 'hex');
-
-proveBlockState(
-    provider,
-    contractAddress,
-    blockIdExt,
-    shardBlockIdExt,
-    shardProof,
-    proof,
-    state
-).then(console.log).catch(console.error);
+main();
