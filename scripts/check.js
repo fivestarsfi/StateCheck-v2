@@ -1,88 +1,97 @@
-async function proveState(params) {
-    const {
-        id,              
-        shardblk,        
-        shard_proof,     
-        proof,          
-        state           
-    } = params;
+const TonWeb = require('tonweb');
 
-    const messageBody = beginCell()
-        .storeUint(0x706f7665, 32)  
-        .storeRef(beginCell()        
-            .storeInt(id.workchain, 32)
-            .storeUint(id.shard, 64)
-            .storeUint(id.seqno, 32)
-            .storeBuffer(Buffer.from(id.root_hash, 'base64'), 32)
-            .storeBuffer(Buffer.from(id.file_hash, 'base64'), 32)
-            .endCell())
-        .storeRef(beginCell()        
-            .storeInt(shardblk.workchain, 32)
-            .storeUint(shardblk.shard, 64)
-            .storeUint(shardblk.seqno, 32)
-            .storeBuffer(Buffer.from(shardblk.root_hash, 'base64'), 32)
-            .storeBuffer(Buffer.from(shardblk.file_hash, 'base64'), 32)
-            .endCell())
-        .storeRef(beginCell()        
-            .storeBuffer(Buffer.from(shard_proof, 'base64'))
-            .storeBuffer(Buffer.from(proof, 'base64'))
-            .endCell())
-        .storeRef(beginCell()        
-            .storeBuffer(Buffer.from(state, 'base64'))
-            .endCell())
-        .endCell();
+async function proveBlockState(
+    provider,
+    contractAddress,
+    blockIdExt,
+    shardBlockIdExt,
+    shardProof,
+    proof,
+    state
+) {
+    const tonweb = new TonWeb(provider);
 
-    const provider = await TonClient.create({
-        endpoint: 'https://toncenter.com/api/v2/jsonRPC'
-    });
+    const cell = new TonWeb.boc.Cell();
+    
+    cell.bits.writeUint(blockIdExt.workchain, 32);
+    cell.bits.writeUint(blockIdExt.shard, 64);
+    cell.bits.writeUint(blockIdExt.seqno, 32);
+    cell.bits.writeUint(blockIdExt.root_hash, 256);
+    cell.bits.writeUint(blockIdExt.file_hash, 256);
+
+    cell.bits.writeUint(shardBlockIdExt.workchain, 32);
+    cell.bits.writeUint(shardBlockIdExt.shard, 64);
+    cell.bits.writeUint(shardBlockIdExt.seqno, 32);
+    cell.bits.writeUint(shardBlockIdExt.root_hash, 256);
+    cell.bits.writeUint(shardBlockIdExt.file_hash, 256);
+
+    cell.bits.writeBytes(shardProof);
+    cell.bits.writeBytes(proof);
+    cell.bits.writeBytes(state);
+
+    const payload = {
+        to: contractAddress,
+        value: TonWeb.utils.toNano('0.1'), 
+        body: cell.toBoc(),
+        sendMode: 3 
+    };
 
     try {
-        const sender = provider.open(await WalletContract.create(
-            provider,
-            YOUR_WALLET_CONFIG
-        ));
-
-        const tx = await sender.send({
-            to: CONTRACT_ADDRESS,
-            value: toNano('0.1'),
-            body: messageBody,
-            bounce: true
-        });
-
-        const receipt = await provider.getTransaction({
-            hash: tx.hash,
-            timeout: 60000
-        });
-
-        if (receipt.exitCode === 0) {
-            return { success: true, message: "State proved successfully" };
+       
+        const result = await tonweb.sendBoc(payload);
+        
+        const transaction = await tonweb.provider.getTransaction(result.hash);
+        
+        if (transaction.exitCode === 0) {
+            return {
+                success: true,
+                message: "State proof verified successfully"
+            };
         } else {
-            return { success: false, message: Proof rejected with exit code ${receipt.exitCode} }; // Исправлено здесь
+            return {
+                success: false,
+                message: "State proof verification failed",
+                exitCode: transaction.exitCode
+            };
         }
-
     } catch (error) {
-        return { success: false, message: error.message };
+        return {
+            success: false,
+            message: "Transaction failed",
+            error: error.message
+        };
     }
 }
 
-const params = {
-    id: {
-        workchain: -1,
-        shard: '8000000000000000',  
-        seqno: 1234567,
-        root_hash: 'base64_encoded_string',
-        file_hash: 'base64_encoded_string'
-    },
-    shardblk: {
-        workchain: -1,
-        shard: '8000000000000000',
-        seqno: 1234567,
-        root_hash: 'base64_encoded_string',
-        file_hash: 'base64_encoded_string'
-    },
-    shard_proof: 'base64_encoded_string',
-    proof: 'base64_encoded_string',
-    state: 'base64_encoded_string'
+const provider = new TonWeb.HttpProvider('https://toncenter.com/api/v2/jsonRPC');
+
+const blockIdExt = {
+    workchain: 0,
+    shard: BigInt("0x8000000000000000"),
+    seqno: 1234567,
+    root_hash: Buffer.from('...', 'hex'),
+    file_hash: Buffer.from('...', 'hex')
 };
 
-proveState(params).then(console.log);
+const shardBlockIdExt = {
+    workchain: 0,
+    shard: BigInt("0x8000000000000000"),
+    seqno: 1234567,
+    root_hash: Buffer.from('...', 'hex'),
+    file_hash: Buffer.from('...', 'hex')
+};
+
+const contractAddress = 'EQD...'; // Адрес смарт-контракта
+const shardProof = Buffer.from('...', 'hex');
+const proof = Buffer.from('...', 'hex');
+const state = Buffer.from('...', 'hex');
+
+proveBlockState(
+    provider,
+    contractAddress,
+    blockIdExt,
+    shardBlockIdExt,
+    shardProof,
+    proof,
+    state
+).then(console.log).catch(console.error);
