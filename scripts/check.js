@@ -63,26 +63,26 @@ async function proveBlockState(
     }
 }
 
-const provider = new TonWeb.HttpProvider('https://toncenter.com/api/v2/jsonRPC');
+const provider = new TonWeb.HttpProvider('https://toncenter.com/api/v2/jsonRPC', {apiKey: 'YOUR_MAINNET_TONCENTER_API_KEY'});
 
 const blockIdExt = {
     workchain: 0,
-    shard: BigInt("0x8000000000000000"),
-    seqno: 1234567,
-    root_hash: Buffer.from('...', 'hex'),
-    file_hash: Buffer.from('...', 'hex')
+    shard: (-0x8000000000000000n).toString(10),
+    seqno: 47152024,
+    root_hash: Buffer.from('9eeed2b60691f0541e557cae78546c4499dd6d7020b94904766d5dc28a4a0da6', 'hex'),
+    file_hash: Buffer.from('b805366557a97b74b8d0c0e816e999fe6028189cd134c7d43c78b51374008fe2', 'hex')
 };
 
 const shardBlockIdExt = {
     workchain: 0,
-    shard: BigInt("0x8000000000000000"),
-    seqno: 1234567,
-    root_hash: Buffer.from('...', 'hex'),
-    file_hash: Buffer.from('...', 'hex')
+    shard:  (-0x8000000000000000n).toString(10),
+    seqno: 47152024,
+    root_hash: Buffer.from('9eeed2b60691f0541e557cae78546c4499dd6d7020b94904766d5dc28a4a0da6', 'hex'),
+    file_hash: Buffer.from('b805366557a97b74b8d0c0e816e999fe6028189cd134c7d43c78b51374008fe2', 'hex')
 };
 
-const contractAddress = 'EQD...'; // Адрес смарт-контракта
-const shardProof = Buffer.from('...', 'hex');
+const contractAddress = 'EQD7YrjK6en_nISdSSn6jvPI896mZG5ZgUn-GdB1yudAxdLR'; 
+const shardProof = Buffer.from('EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE', 'hex');
 const proof = Buffer.from('...', 'hex');
 const state = Buffer.from('...', 'hex');
 
