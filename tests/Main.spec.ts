@@ -56,7 +56,7 @@ function intToIP(int: number) {
     });
 
     it('should deploy', async () => {
-        // Проверка выполняется внутри beforeEach
+
     });
 
     it('should check', async () => {
@@ -72,8 +72,8 @@ function intToIP(int: number) {
             }
         );
 
-Cell.fromBoc(accountState.shardProof) // пруф того что акк в блоке
-Cell.fromBoc(accountState.proof) // пруф что шард блок в мастере
+Cell.fromBoc(accountState.shardProof) 
+Cell.fromBoc(accountState.proof) 
 Cell.fromBoc(accountState.raw) // Maybe Account
 
     });
