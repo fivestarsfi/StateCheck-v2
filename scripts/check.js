@@ -11,7 +11,7 @@ async function proveBlockState(
 ) {
     try {
         const endpoint = await getHttpEndpoint({
-            network: "mainnet", // или "testnet"
+            network: "mainnet", // or "testnet"
         });
 
         const tonweb = new TonWeb(new TonWeb.HttpProvider(endpoint));
