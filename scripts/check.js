@@ -67,23 +67,23 @@ const provider = new TonWeb.HttpProvider('https://toncenter.com/api/v2/jsonRPC',
 
 const blockIdExt = {
     workchain: 0,
-    shard: (-0x8000000000000000n).toString(10),
-    seqno: 47152024,
+    shard: (BigInt("0x8000000000000000"), 64),
+    seqno: 40858608,
     root_hash: Buffer.from('9eeed2b60691f0541e557cae78546c4499dd6d7020b94904766d5dc28a4a0da6', 'hex'),
     file_hash: Buffer.from('b805366557a97b74b8d0c0e816e999fe6028189cd134c7d43c78b51374008fe2', 'hex')
 };
 
 const shardBlockIdExt = {
     workchain: 0,
-    shard:  (-0x8000000000000000n).toString(10),
-    seqno: 47152024,
+    shard:  (BigInt("0x8000000000000000"), 64),
+    seqno: 40858608,
     root_hash: Buffer.from('9eeed2b60691f0541e557cae78546c4499dd6d7020b94904766d5dc28a4a0da6', 'hex'),
     file_hash: Buffer.from('b805366557a97b74b8d0c0e816e999fe6028189cd134c7d43c78b51374008fe2', 'hex')
 };
 
 const contractAddress = 'EQD7YrjK6en_nISdSSn6jvPI896mZG5ZgUn-GdB1yudAxdLR'; 
-const shardProof = Buffer.from('EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE', 'hex');
-const proof = Buffer.from('...', 'hex');
+const shardProof = Buffer.from('te6ccgECFAEAAnkACUYDH7FlvFX4nw2k', 'hex');
+const proof = Buffer.from('s4cxUpMo0tn1FgwyH6Jws9PMDB04cYAFgEkEBHvVar', 'hex');
 const state = Buffer.from('...', 'hex');
 
 proveBlockState(
