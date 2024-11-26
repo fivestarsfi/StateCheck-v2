@@ -26,6 +26,7 @@
         "@orbs-network/ton-access": "^2.3.3",
         "@ton-community/sandbox": "^0.11.0",
         "axios": "^1.7.7",
+        "bn": "^1.0.5",
         "ton-lite-client": "^3.0.0",
         "tonweb": "^0.0.66"
     },

@@ -2887,6 +2887,11 @@ bn.js@5.1.1:
   resolved "https://registry.npmjs.org/bn.js/-/bn.js-5.1.1.tgz"
   integrity sha512-IUTD/REb78Z2eodka1QZyyEk66pciRcP6Sroka0aI3tG/iwIdYLrBD62RsubR7vqdt3WyX8p4jxeatzmRSphtA==
 
+bn@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.npmjs.org/bn/-/bn-1.0.5.tgz"
+  integrity sha512-7TvGbqbZb6lDzsBtNz1VkdXXV0BVmZKPPViPmo2IpvwaryF7P+QKYKACyVkwo2mZPr2CpFiz7EtgPEcc3o/JFQ==
+
 bplist-creator@0.0.7:
   version "0.0.7"
   resolved "https://registry.npmjs.org/bplist-creator/-/bplist-creator-0.0.7.tgz"

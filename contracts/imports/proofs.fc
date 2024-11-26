@@ -37,11 +37,10 @@
             slice extra = cs; ;; first extra
             cell extraa = cs~load_ref(); ;; second extra
             slice value = extraa.begin_parse();
-            (cell dict_value, int found) = dict.pfxdict_get?(key_len, key);
+            (extra, value, slice dict_value, int found) = pfxdict_get?(dict, key_len, key);
             throw_unless(707, found == -1); 
             if (found) {
-                slice dict_value_slice = dict_value.begin_parse();
-                throw_unless(708, equal_slices(dict_value_slice, value));
+                throw_unless(708, equal_slices(dict_value, value));
         }
         return (extra, value, -1);
      } 
