@@ -45,41 +45,50 @@ PROGRAM{
     CONT:<{
       c2 SAVE
       SAMEALTSAVE
-      s0 s2 XCHG
+      s2 PUSH
       CTOS
       WHILE:<{
-        OVER
+        s2 PUSH
         0 GTINT
       }>DO<{
-        OVER
+        s2 PUSH
         ReadHashmap INLINECALLDICT
-        s3 s3 XCPU
+        s4 s4 XCPU
         SUB
         DUP
         0 EQINT
         IFJMP:<{
-          s2 s4 XCHG
-          4 BLKDROP
+          s4 POP
+          2DROP
+          -ROT
+          PFXDICTGETQ
+          NULLSWAPIFNOT2
           DUP
-          LDREF
-          DROP
-          CTOS
+          -1 EQINT
+          707 THROWIFNOT
+          IF:<{
+            OVER
+            SDEQ
+            708 THROWIFNOT
+          }>ELSE<{
+            DROP
+          }>
           -1 PUSHINT
           RETALT
         }>
-        s4 s1 PUXC
+        s3 s1 PUXC
         SDPFXREV
         IFNOTJMP:<{
-          4 BLKDROP
+          5 BLKDROP
           PUSHNULL
           PUSHNULL
           0 PUSHINT
           RETALT
         }>
-        2SWAP
+        s2 s3 XCHG2
         SDSKIPFIRST
         1 LDU
-        s0 s3 XCHG
+        s0 s2 XCHG
         LDREF
         LDREF
         DROP
@@ -91,7 +100,7 @@ PROGRAM{
         }>
         CTOS
       }>
-      3 BLKDROP
+      4 BLKDROP
       PUSHNULL
       PUSHNULL
       0 PUSHINT
@@ -288,15 +297,22 @@ PROGRAM{
     DUP
     ISNULL
     1003 THROWIF
-    SWAP
+    OVER
     NEWC
     256 STU
     ENDC
     CTOS
     8 PUSHPOW2
-    SWAP
+    s2 PUSH
+    s0 s2 XCHG
     FullHashmapAugNode INLINECALLDICT
-    1 2 BLKDROP2
+    DROP
+    NIP
+    -ROT
+    32 PUSHINT
+    DICTUGET
+    NULLSWAPIFNOT
+    NIP
     1003 THROWIFNOT
     HASHSU
     SWAP

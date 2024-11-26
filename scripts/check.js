@@ -101,7 +101,7 @@ async function main() {
         );
         
         const exampleData = {
-            contractAddress: 'EQD7YrjK6en_nISdSSn6jvPI896mZG5ZgUn-GdB1yudAxdLR',
+            contractAddress: 'EQBKbWV8GeUYm-Xs8d4OkjTbTP6wLbkuPfJYbAHFI5HUzvJZ',
             blockIdExt: {
                 workchain: masterchainInfo.last.workchain,
                 shard: masterchainInfo.last.shard,

@@ -1,5 +1,7 @@
 # StateCheckExample-v2
 
+# current testnet address - `EQBKbWV8GeUYm-Xs8d4OkjTbTP6wLbkuPfJYbAHFI5HUzvJZ`
+
 # respect to og repo by yungwine https://github.com/yungwine/state-check-example 
 # thx for help NickNekilov
 

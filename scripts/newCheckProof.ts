@@ -67,7 +67,7 @@ const shardProofer = {
         
     };
 
-const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('EQD7YrjK6en_nISdSSn6jvPI896mZG5ZgUn-GdB1yudAxdLR')));
+const proofChecker = provider.open(ProofChecker.createFromAddress(Address.parse('EQBKbWV8GeUYm-Xs8d4OkjTbTP6wLbkuPfJYbAHFI5HUzvJZ')));
 
 await proofChecker.sendCheckProof(provider.sender(), toNano('0.1'), {
         rootHash,
