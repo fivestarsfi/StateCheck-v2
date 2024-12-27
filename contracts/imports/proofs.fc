@@ -1,6 +1,8 @@
 #include "stdlib.fc";
 #include "errors.fc";
 
+(slice, int) dict_get?(cell dict, int key_len, slice index) asm(index key_len dict) "DICTGET";
+
 (slice, slice, int) ReadHashmap(slice src, int m) impure inline {
     if (src~load_uint(1)) {
         if (src~load_uint(1)) {
@@ -37,13 +39,14 @@
             slice extra = cs; ;; first extra
             cell extraa = cs~load_ref(); ;; second extra
             slice value = extraa.begin_parse();
-            (extra, value, slice dict_value, int found) = pfxdict_get?(dict, key_len, key);
+            (slice dict_value, int found) = dict_get?(dict, key_len, key);
             throw_unless(707, found == -1); 
             if (found) {
                 throw_unless(708, equal_slices(dict_value, value));
+            }
+            return (extra, value, -1);
         }
-        return (extra, value, -1);
-     } 
+        
         ifnot (slice_has_prefix(key, label)) {
             return (null(), null(), 0);
         }
@@ -55,7 +58,6 @@
         
         cs = (is_right ? right : left).begin_parse();
     }
-    
     return (null(), null(), 0);
 }
 
