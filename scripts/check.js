@@ -1,5 +1,5 @@
-const TonWeb = require('tonweb');
-const { getHttpEndpoint } = require("@orbs-network/ton-access");
+import TonWeb from "tonweb";
+import { getHttpEndpoint } from "@orbs-network/ton-access";
 
 async function proveBlockState(
     contractAddress,
@@ -75,7 +75,7 @@ async function proveBlockState(
         // Ждем подтверждения транзакции
         let attempts = 10;
         while (attempts > 0) {
-            const transaction = await tonweb.provider.getTransaction(result.hash);
+            const transaction = await tonweb.provider.getTransactions(result.hash);
             if (transaction) {
                 return {
                     success: transaction.exitCode === 0,
@@ -165,11 +165,10 @@ async function main() {
             shardProof: accountState.shardProof,
             proof: accountState.proof,
             state: accountState.state
-        };
-
+        };   
         // Валидация данных
         validateBlockData(data);
-
+        
         // Выполнение доказательства
         const result = await proveBlockState(
             data.contractAddress,
@@ -179,7 +178,6 @@ async function main() {
             data.proof,
             data.state
         );
-
         if (!result || !result.success) {
             throw new Error(result?.message || 'Proof verification failed');
         }
@@ -195,7 +193,7 @@ async function main() {
     } catch (error) {
         console.error('Error during proof verification:', {
             message: error.message,
-            stack: error.stack
+            stack: error.stack,
         });
         throw error;
     }
@@ -230,7 +228,7 @@ function validateBlockData(data) {
 }
 
 // Запуск с обработкой ошибок верхнего уровня
-main().catch(error => {
+main().catch(error => {   
     console.error('Fatal error:', error);
     process.exit(1);
 });
