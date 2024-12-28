@@ -18,7 +18,7 @@ async function proveBlockState(
         //    network: "testnet"
        // });
 
-        const tonweb = new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', {apiKey: 'your testnet api key'}));
+        const tonweb = new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', {apiKey: 'testnet key'}));
 
         const cell = new TonWeb.boc.Cell();
 
@@ -102,22 +102,22 @@ async function main() {
        //     throw new Error('Failed to get HTTP endpoint');
        // }
         
-        const tonweb = new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', {apiKey: 'your testnet api key'}));
+        const tonweb = new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', {apiKey: 'testnet key'}));
 
         const masterchainInfo = await tonweb.provider.getMasterchainInfo();
         if (!masterchainInfo || !masterchainInfo.last) {
             throw new Error('Failed to get masterchain info');
         }
 
-        const blockHeader = await tonweb.provider.getBlockHeader(
-            masterchainInfo.last.seqno,
-            masterchainInfo.last.shard,
-            masterchainInfo.last.workchain
-        );
+     //   const blockHeader = await tonweb.provider.getBlockHeader(
+     //       masterchainInfo.last.seqno,
+     //       masterchainInfo.last.shard,
+     //       masterchainInfo.last.workchain
+     //   );
         
-        if (!blockHeader) {
-            throw new Error('Failed to get block header');
-        }
+     //   if (!blockHeader) {
+     //       throw new Error('Failed to get block header');
+     //  }
 
         const contractAddress = 'EQBKbWV8GeUYm-Xs8d4OkjTbTP6wLbkuPfJYbAHFI5HUzvJZ';
         const address = new TonWeb.utils.Address(contractAddress);
