@@ -18,7 +18,7 @@ async function proveBlockState(
         //    network: "testnet"
        // });
 
-        const tonweb = new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', {apiKey: 'your testnet api key'}));
+        const tonweb = new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', {apiKey: '9b666e9dd8cbeb9591d6c59fab604bfd55605d5f86d3a71c21d8d3ad06e40141'}));
 
         const cell = new TonWeb.boc.Cell();
 
@@ -93,22 +93,24 @@ async function proveBlockState(
 
 async function main() {
     try {
-       
+        // Инициализация TonWeb
         //const endpoint = await getHttpEndpoint({
-        //    network: "testnet" 
+        //    network: "testnet" // или "mainnet" в зависимости от требований
         //});
         
        // if (!endpoint) {
        //     throw new Error('Failed to get HTTP endpoint');
        // }
         
-        const tonweb = new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', {apiKey: 'your testnet api key'}));
+        const tonweb = new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', {apiKey: '9b666e9dd8cbeb9591d6c59fab604bfd55605d5f86d3a71c21d8d3ad06e40141'}));
 
+        // Получение информации о мастерчейне
         const masterchainInfo = await tonweb.provider.getMasterchainInfo();
         if (!masterchainInfo || !masterchainInfo.last) {
             throw new Error('Failed to get masterchain info');
         }
 
+        // Получение информации о блоке
         const blockHeader = await tonweb.provider.getBlockHeader(
             masterchainInfo.last.seqno,
             masterchainInfo.last.shard,
@@ -119,6 +121,7 @@ async function main() {
             throw new Error('Failed to get block header');
         }
 
+        // Проверка адреса контракта
         const contractAddress = 'EQBKbWV8GeUYm-Xs8d4OkjTbTP6wLbkuPfJYbAHFI5HUzvJZ';
         const address = new TonWeb.utils.Address(contractAddress);
         
@@ -126,11 +129,13 @@ async function main() {
             throw new Error('Invalid contract address');
         }
 
+        // Получение состояния аккаунта
         const accountState = await tonweb.provider.getAccountState(address);
         if (!accountState) {
             throw new Error('Failed to get account state');
         }
 
+        // Формирование структуры данных
         const data = {
             contractAddress: address.toString(),
             blockIdExt: {
@@ -151,9 +156,10 @@ async function main() {
             proof: accountState.proof,
             state: accountState.state
         };   
-       
+        // Валидация данных
         validateBlockData(data);
         
+        // Выполнение доказательства
         const result = await proveBlockState(
             data.contractAddress,
             data.blockIdExt,
@@ -183,6 +189,7 @@ async function main() {
     }
 }
 
+// Вспомогательная функция для валидации данных блока
 function validateBlockData(data) {
     const requiredFields = [
         'contractAddress',
@@ -210,6 +217,7 @@ function validateBlockData(data) {
    }
 }
 
+// Запуск с обработкой ошибок верхнего уровня
 main().catch(error => {   
     console.error('Fatal error:', error);
     process.exit(1);
