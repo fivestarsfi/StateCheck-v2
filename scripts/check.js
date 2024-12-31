@@ -1,5 +1,6 @@
 import TonWeb from "tonweb";
 import { getHttpEndpoint } from "@orbs-network/ton-access";
+import { LiteClient, LiteRoundRobinEngine, LiteSingleEngine } from 'ton-lite-client';
 
 async function proveBlockState(
     contractAddress,
@@ -18,7 +19,7 @@ async function proveBlockState(
         //    network: "testnet"
        // });
 
-        const tonweb = new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', {apiKey: 'testnet key'}));
+        const tonweb = new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', {apiKey: ''}));
 
         const cell = new TonWeb.boc.Cell();
 
@@ -102,12 +103,27 @@ async function main() {
        //     throw new Error('Failed to get HTTP endpoint');
        // }
         
-        const tonweb = new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', {apiKey: 'testnet key'}));
+        const tonweb = new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', {apiKey: ''}));
 
         const masterchainInfo = await tonweb.provider.getMasterchainInfo();
         if (!masterchainInfo || !masterchainInfo.last) {
-            throw new Error('Failed to get masterchain info');
+        throw new Error('Failed to get masterchain info');
         }
+
+        const transactions = await tonweb.provider.getBlockTransactions(
+        masterchainInfo.last.workchain,
+        masterchainInfo.last.shard,
+        masterchainInfo.last.seqno,
+        masterchainInfo.last.addressHash,
+        1  
+        );
+
+        if (!transactions) {
+        throw new Error('Failed to get transactions');
+        }
+
+
+        console.log('Transactions:', transactions);
 
      //   const blockHeader = await tonweb.provider.getBlockHeader(
      //       masterchainInfo.last.seqno,
@@ -120,19 +136,14 @@ async function main() {
      //  }
 
         const contractAddress = 'EQBKbWV8GeUYm-Xs8d4OkjTbTP6wLbkuPfJYbAHFI5HUzvJZ';
-        const address = new TonWeb.utils.Address(contractAddress);
-        
-        if (!address.isValid()) {
-            throw new Error('Invalid contract address');
-        }
 
-        const accountState = await tonweb.provider.getAccountState(address);
+        const accountState = await tonweb.provider.getAddressInfo(contractAddress);
         if (!accountState) {
-            throw new Error('Failed to get account state');
+        throw new Error('Failed to get account state');
         }
 
         const data = {
-            contractAddress: address.toString(),
+            contractAddress: contractAddress,
             blockIdExt: {
                 workchain: masterchainInfo.last.workchain,
                 shard: masterchainInfo.last.shard,
